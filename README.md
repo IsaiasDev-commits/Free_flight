@@ -1,55 +1,50 @@
-# Free_flight
-Flappy Bird - Pygame Edition
-A Flappy Bird clone developed in Python using Pygame, with full-screen support and touch or keyboard controls.
+ 
+# Free Flight  
 
-📌 Features
-✅ Responsive display: Automatically adjusts to the screen size.
-✅ Background music and sound effects.
-✅ Progressive difficulty: Speed ​​increases every 5 points.
-✅ Keyboard, click, and touch support.
+A Flappy Bird-inspired game where you control a bird that must avoid crashing into trees. It supports full-screen mode and adapts to different screen resolutions.  
 
-🎮 Controls
-🕹️ Spacebar / Click / Tap → Make the bird jump.
-🔄 Tap the screen after "Game Over" → Restart the game.
+## Features  
 
-📂 Installation
-Clone the repository
-attempt
+- **Optional full-screen mode**  
+- **Graphics that adapt** to your screen size  
+- **Background music and sound effects**  
+- **Progressive difficulty increase**  
+- **Take screenshots** by pressing `S`  
 
-Copy
+## Installation and Running  
 
-Edit
-git clone https://github.com/your-username/flappy-bird.git
-cd flappy-bird
-Install dependencies
-attempt
+### Prerequisites  
 
-Copy
+Make sure you have Python 3 and Pygame installed:  
 
-Edit
+```bash
 pip install pygame
-Run the game
-attempt
+```
 
-Copy
+### Clone the Repository  
 
-Edit
-python flappy_bird.py
-🎵 Required Files
-Make sure you have the following files in the main project folder:
-📁 Images
+```bash
+git clone https://github.com/IsaiasDev-commits/Free_flight.git
+cd Free_flight
+```
 
-assets/bird.png
-assets/pipe.png
-assets/background.png
-📁 Sounds
+### Run the Game  
 
-assets/background_music.mp3
-assets/hit_sound.mp3
-If any files are missing, the game will display an error.
+```bash
+python Free_flight.py
+```
+
+## Controls  
+
+- **Space / Click / Tap** → Make the bird fly  
+- **S** → Save a screenshot  
+- **Close the window** → Exit the game  
+
+## License  
+
+This project is licensed under the **MIT License**. See the [LICENSE](LICENSE) file for details.  
 
 Screenshots
-![image](https://github.com/user-attachments/assets/5950b9c0-8664-4cba-9834-fafcba222d2a)
+![image](https://github.com/user-attachments/assets/6d0cfb57-f22c-46d8-9511-f702c3b5cd15)
 
-📜 License
-This project is licensed under the MIT License. You are free to use and modify it.
+
