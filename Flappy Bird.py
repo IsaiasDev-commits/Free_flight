@@ -7,7 +7,13 @@ pygame.init()
 
 # Configuración de pantalla adaptable
 WIDTH, HEIGHT = pygame.display.Info().current_w, pygame.display.Info().current_h
-screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.FULLSCREEN)
+
+# Preguntar si el usuario quiere pantalla completa
+fullscreen = input("¿Quieres jugar en pantalla completa? (s/n): ").strip().lower() == "s"
+
+# Configuración de la ventana
+flags = pygame.FULLSCREEN | pygame.NOFRAME if fullscreen else 0
+screen = pygame.display.set_mode((WIDTH, HEIGHT), flags)
 pygame.display.set_caption("Flappy Bird")
 
 # Colores y fuentes
@@ -22,18 +28,18 @@ def check_file(filename):
     return True
 
 # Cargar imágenes
-if check_file("bird.png") and check_file("pipe.png") and check_file("background.png"):
+if check_file("bird.png") and check_file("tree.png") and check_file("background.png"):
     bird_img = pygame.image.load("bird.png")
-    pipe_img = pygame.image.load("pipe.png")
+    tree_img = pygame.image.load("tree.png")
     background_img = pygame.image.load("background.png")
 
     # Ajustar tamaños automáticamente según la pantalla
     bird_size = (WIDTH // 10, HEIGHT // 15)  
-    pipe_size = (WIDTH // 6, HEIGHT)  
+    tree_size = (WIDTH // 6, HEIGHT // 2)  
     background_img = pygame.transform.scale(background_img, (WIDTH, HEIGHT))
     
     bird_img = pygame.transform.scale(bird_img, bird_size)
-    pipe_img = pygame.transform.scale(pipe_img, pipe_size)
+    tree_img = pygame.transform.scale(tree_img, tree_size)
 else:
     print("Error: Archivos de imagen faltantes.")
     exit()
@@ -71,37 +77,37 @@ class Bird:
     def get_rect(self):
         return pygame.Rect(self.x, self.y, bird_img.get_width(), bird_img.get_height())
 
-# Clase de los tubos
-class Pipe:
+# Clase de los árboles
+class Tree:
     def __init__(self, x):
         self.x = x
         self.height = random.randint(HEIGHT // 4, HEIGHT // 2)
         self.gap = HEIGHT // 4  
-        self.speed = WIDTH * 0.005  # Velocidad base
+        self.speed = WIDTH * 0.005  
 
     def move(self):
         self.x -= self.speed  
-        if self.x < -pipe_img.get_width():
+        if self.x < -tree_img.get_width():
             self.x = WIDTH
             self.height = random.randint(HEIGHT // 4, HEIGHT // 2)
-            return True  # Devuelve True cuando el pájaro pasa el tubo
+            return True  
         return False  
 
     def draw(self):
-        pipe_top = pygame.transform.flip(pipe_img, False, True)  
-        screen.blit(pipe_top, (self.x, self.height - pipe_img.get_height()))  
-        screen.blit(pipe_img, (self.x, self.height + self.gap))  
+        tree_top = pygame.transform.flip(tree_img, False, True)  
+        screen.blit(tree_top, (self.x, self.height - tree_img.get_height()))  
+        screen.blit(tree_img, (self.x, self.height + self.gap))  
 
     def get_rects(self):
-        top_rect = pygame.Rect(self.x, self.height - pipe_img.get_height(), pipe_img.get_width(), pipe_img.get_height())
-        bottom_rect = pygame.Rect(self.x, self.height + self.gap, pipe_img.get_width(), pipe_img.get_height())
+        top_rect = pygame.Rect(self.x, self.height - tree_img.get_height(), tree_img.get_width(), tree_img.get_height())
+        bottom_rect = pygame.Rect(self.x, self.height + self.gap, tree_img.get_width(), tree_img.get_height())
         return top_rect, bottom_rect
 
 # Función para reiniciar el juego
 def restart_game():
-    global bird, pipes, game_over, score, speed
+    global bird, trees, game_over, score, speed
     bird = Bird()
-    pipes = [Pipe(WIDTH // 1.5), Pipe(WIDTH * 1.2)]
+    trees = [Tree(WIDTH // 1.5), Tree(WIDTH * 1.2)]
     game_over = False
     score = 0
     speed = WIDTH * 0.005  
@@ -109,12 +115,12 @@ def restart_game():
 
 # Inicializar objetos
 bird = Bird()
-pipes = [Pipe(WIDTH // 1.5), Pipe(WIDTH * 1.2)]
+trees = [Tree(WIDTH // 1.5), Tree(WIDTH * 1.2)]
 game_over = False
 score = 0
 speed = WIDTH * 0.005  
 
-pygame.mixer.music.play(-1)  # Iniciar la música
+pygame.mixer.music.play(-1)  
 
 # Bucle principal
 running = True
@@ -127,30 +133,33 @@ while running:
         if event.type == pygame.QUIT:
             running = False
 
-        # Permitir saltar con teclado, clic y pantalla táctil
         if (event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE) or event.type == pygame.MOUSEBUTTONDOWN or event.type == pygame.FINGERDOWN:
             if not game_over:
                 bird.flap()
-            elif game_over:
+            else:
                 restart_game()
+
+        if event.type == pygame.KEYDOWN and event.key == pygame.K_s:
+            pygame.image.save(screen, "captura.png")
+            print("Captura guardada como 'captura.png'.")
 
     if not game_over:
         bird.move()
         bird.draw()
 
-        for pipe in pipes:
-            if pipe.move():
+        for tree in trees:
+            if tree.move():
                 score += 1
                 if score % 5 == 0:  
                     speed += WIDTH * 0.0005  
-                    for p in pipes:
-                        p.speed = speed  
+                    for t in trees:
+                        t.speed = speed  
 
-            pipe.draw()
+            tree.draw()
 
-            # Detección de colisión con los tubos
+            # Detección de colisión con los árboles
             bird_rect = bird.get_rect()
-            top_rect, bottom_rect = pipe.get_rects()
+            top_rect, bottom_rect = tree.get_rects()
 
             if bird_rect.colliderect(top_rect) or bird_rect.colliderect(bottom_rect) or bird.y >= HEIGHT or bird.y <= 0:
                 game_over = True
