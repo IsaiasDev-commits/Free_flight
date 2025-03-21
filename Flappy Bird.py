@@ -8,12 +8,8 @@ pygame.init()
 # Configuración de pantalla adaptable
 WIDTH, HEIGHT = pygame.display.Info().current_w, pygame.display.Info().current_h
 
-# Preguntar si el usuario quiere pantalla completa
-fullscreen = input("¿Quieres jugar en pantalla completa? (s/n): ").strip().lower() == "s"
-
-# Configuración de la ventana
-flags = pygame.FULLSCREEN | pygame.NOFRAME if fullscreen else 0
-screen = pygame.display.set_mode((WIDTH, HEIGHT), flags)
+# Configuración de la ventana sin preguntar por pantalla completa
+screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.FULLSCREEN | pygame.NOFRAME)
 pygame.display.set_caption("Flappy Bird")
 
 # Colores y fuentes
@@ -27,33 +23,49 @@ def check_file(filename):
         return False
     return True
 
-# Cargar imágenes
-if check_file("bird.png") and check_file("tree.png") and check_file("background.png"):
-    bird_img = pygame.image.load("bird.png")
-    tree_img = pygame.image.load("tree.png")
-    background_img = pygame.image.load("background.png")
+# Cargar imágenes con convert_alpha() para mejorar el renderizado
+if check_file("bird_spritesheet.png") and check_file("tree.png") and check_file("background.png"):
+    bird_spritesheet = pygame.image.load("bird_spritesheet.png").convert_alpha()
+    tree_img = pygame.image.load("tree.png").convert_alpha()
+    background_img = pygame.image.load("background.png").convert_alpha()
 
     # Ajustar tamaños automáticamente según la pantalla
     bird_size = (WIDTH // 10, HEIGHT // 15)  
     tree_size = (WIDTH // 6, HEIGHT // 2)  
     background_img = pygame.transform.scale(background_img, (WIDTH, HEIGHT))
     
-    bird_img = pygame.transform.scale(bird_img, bird_size)
     tree_img = pygame.transform.scale(tree_img, tree_size)
+
+    # Escalar la spritesheet completa antes de extraer frames para evitar pérdida de calidad
+    bird_spritesheet = pygame.transform.scale(
+        bird_spritesheet, (bird_spritesheet.get_width() * 3, bird_spritesheet.get_height() * 3)
+    )
+
+    # Extraer los 4 frames de la imagen (2x2 disposición)
+    frame_width = bird_spritesheet.get_width() // 2
+    frame_height = bird_spritesheet.get_height() // 2
+    bird_frames = [
+        pygame.transform.scale(
+            bird_spritesheet.subsurface(pygame.Rect(x * frame_width, y * frame_height, frame_width, frame_height)),
+            bird_size
+        )
+        for y in range(2) for x in range(2)  # 2 filas x 2 columnas
+    ]
 else:
     print("Error: Archivos de imagen faltantes.")
     exit()
 
 # Cargar sonidos
 pygame.mixer.init()
-if check_file("background_music.mp3") and check_file("hit_sound.mp3"):
+if check_file("background_music.mp3") and check_file("hit_sound.mp3") and check_file("flap_sound.mp3"):
     pygame.mixer.music.load("background_music.mp3")
     game_over_sound = pygame.mixer.Sound("hit_sound.mp3")
+    flap_sound = pygame.mixer.Sound("flap_sound.mp3")
 else:
     print("Error: Archivos de sonido faltantes.")
     exit()
 
-# Clase del pájaro
+# Clase del pájaro con animación mejorada
 class Bird:
     def __init__(self):
         self.x = WIDTH // 8
@@ -61,21 +73,30 @@ class Bird:
         self.velocity = 0
         self.gravity = HEIGHT * 0.0015
         self.alive = True  
+        self.frame_index = 0
+        self.animation_counter = 0
 
     def flap(self):
         if self.alive:
             self.velocity = -HEIGHT * 0.02  
+            flap_sound.play()
 
     def move(self):
         if self.alive:
             self.velocity += self.gravity
             self.y += self.velocity
 
+    def animate(self):
+        self.animation_counter += 1
+        if self.animation_counter % 6 == 0:  # Ajustar velocidad de animación
+            self.frame_index = (self.frame_index + 1) % len(bird_frames)
+        return bird_frames[self.frame_index]
+
     def draw(self):
-        screen.blit(bird_img, (self.x, self.y))
+        screen.blit(self.animate(), (self.x, self.y))
 
     def get_rect(self):
-        return pygame.Rect(self.x, self.y, bird_img.get_width(), bird_img.get_height())
+        return pygame.Rect(self.x, self.y, bird_size[0], bird_size[1])
 
 # Clase de los árboles
 class Tree:
@@ -139,7 +160,8 @@ while running:
             else:
                 restart_game()
 
-        if event.type == pygame.KEYDOWN and event.key == pygame.K_s:
+        # Captura de pantalla con tecla S o Print Screen
+        if event.type == pygame.KEYDOWN and (event.key == pygame.K_s or event.key == pygame.K_PRINTSCREEN):
             pygame.image.save(screen, "captura.png")
             print("Captura guardada como 'captura.png'.")
 
@@ -178,5 +200,4 @@ while running:
     clock.tick(30)
 
 pygame.quit()
-
 
