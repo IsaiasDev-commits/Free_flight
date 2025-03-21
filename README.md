@@ -45,6 +45,7 @@ python Free_flight.py
 This project is licensed under the **MIT License**. See the [LICENSE](LICENSE) file for details.  
 
 Screenshots
-![image](https://github.com/user-attachments/assets/6d0cfb57-f22c-46d8-9511-f702c3b5cd15)
+![image](https://github.com/user-attachments/assets/c45d7488-57db-40eb-b188-727be8d4c2ee)
+
 
 
